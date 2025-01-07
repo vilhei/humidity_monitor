@@ -10,7 +10,10 @@ use esp_hal::{
     delay::Delay,
     entry,
     i2c::master::I2c,
-    rtc_cntl::{sleep::TimerWakeupSource, Rtc},
+    rtc_cntl::{
+        sleep::{RtcSleepConfig, TimerWakeupSource},
+        Rtc,
+    },
     Blocking,
 };
 use esp_println::println;
@@ -33,7 +36,7 @@ static I2C0: StaticCell<critical_section::Mutex<RefCell<I2c<Blocking>>>> = Stati
 #[entry]
 fn main() -> ! {
     let mut config = esp_hal::Config::default();
-    config.cpu_clock = CpuClock::Clock80MHz;
+    config.cpu_clock = CpuClock::Clock160MHz;
     let peripherals = esp_hal::init(config);
 
     let i2c_dev = I2c::new(
@@ -52,48 +55,24 @@ fn main() -> ! {
     let mut aht = aht10_embedded::AHT10::new(CriticalSectionDevice::new(i2c_cs));
     aht.initialize().unwrap();
 
-    let mut display = init_display(i2c_cs);
-    // display
-    //     .clear(BinaryColor::Off)
-    //     .expect("Failed to clear screen");
-
     let mut delay = Delay::new();
     match aht.read_data(&mut delay) {
         Ok(data) => {
             let tmp = data.temperature_celsius();
             let hum = data.humidity();
             println!("Temp {:.3} - Humidity {:.3}", tmp, hum);
-
-            render_temperature(&mut display, tmp);
-            render_humidity(&mut display, hum);
-
-            // if hum > 30.0 {
-            //     led.set_high();
-            // } else {
-            //     led.set_low();
-            // }
         }
 
         Err(e) => {
             println!("Failed to read sensor : {e:?}");
-            Text::with_alignment(
-                "Failed to\nread sensor",
-                display.bounding_box().anchor_point(AnchorPoint::Center),
-                TEXT_STYLE_BIG,
-                Alignment::Center,
-            )
-            .draw(&mut display)
-            .expect("Failed to draw text on screen");
-            // led.set_high();
         }
     }
-    display.flush().expect("Failed to flush display");
-    delay.delay_millis(2000);
-    println!("Going to sleep");
-    let wakeup_source = TimerWakeupSource::new(Duration::from_secs(10));
+    let wakeup_source = TimerWakeupSource::new(Duration::from_secs(5));
     let mut rtc = Rtc::new(peripherals.LPWR);
-    rtc.sleep_deep(&[&wakeup_source]);
-    // loop {}
+    let mut config = RtcSleepConfig::deep();
+    // config.set_rtc_mem_inf_follow_cpu(false);
+    rtc.sleep(&config, &[&wakeup_source]);
+    unreachable!();
 }
 
 fn render_temperature<D>(display: &mut D, temperature: f32)
