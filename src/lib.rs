@@ -75,7 +75,7 @@ pub fn init_display(
         .clear(BinaryColor::Off)
         .expect("Failed to clear screen");
     display
-        .set_brightness(Brightness::NORMAL)
+        .set_brightness(Brightness::DIMMEST)
         .expect("Failed to set screen brightness");
     display.flush().unwrap();
     display
