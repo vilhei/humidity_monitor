@@ -3,11 +3,11 @@ name = "humidity_monitor"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-# name = "humidity_monitor"
-test = false
-doctest = false
-bench = false
+# [lib]
+# # name = "humidity_monitor"
+# test = false
+# doctest = false
+# bench = false
 
 [[bin]]
 name = "humidity_monitor"
@@ -23,6 +23,7 @@ critical-section = "1.2.0"
 embedded-dht-rs = { version = "0.3.2", features = ["dht22"] }
 embedded-graphics = "0.8.1"
 embedded-hal-bus = "0.2.0"
+esp-alloc = "0.5.0"
 esp-backtrace = { version = "0.14.2", features = [
   "esp32c3",
   "panic-handler",
@@ -31,16 +32,17 @@ esp-backtrace = { version = "0.14.2", features = [
 ] }
 esp-hal = { version = "0.22.0", features = ["esp32c3"] }
 esp-println = { version = "0.12.0", features = ["esp32c3"] }
+esp-wifi = { version = "0.11.0", default-features = false, features = [
+  "esp-alloc",
+  "esp-now",
+  "esp32c3",
+] }
 esp32c3 = { version = "0.26.0", features = ["critical-section"] }
 fugit = "0.3.7"
-# heapless = "0.8.0"
 rtic = { version = "2.1.2", features = ["esp32c3", "riscv-esp32c3-backend"] }
 rtic-monotonics = { git = "https://github.com/rtic-rs/rtic", features = [
   "esp32c3-systimer",
 ] }
-ssd1306 = "0.9.0"
-static_cell = "2.1.0"
-u8g2-fonts = "0.5.1"
 
 [profile.release]
 codegen-units = 1
